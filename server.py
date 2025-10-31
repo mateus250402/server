@@ -4,7 +4,9 @@ from flask_cors import CORS
 import sqlite3
 
 app = Flask(__name__)
-CORS(app)  # permite requisições do LibGDX HTML
+# Permite todas as origens e métodos, com suporte a credenciais
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+
 DATABASE = 'game.db'
 
 # Conexão com o banco
@@ -20,8 +22,11 @@ def index():
 # =========================================
 # Inserir jogador
 # =========================================
-@app.route('/api/jogador/insert', methods=['POST'])
+@app.route('/api/jogador/insert', methods=['POST', 'OPTIONS'])
 def insert_jogador():
+    if request.method == 'OPTIONS':
+        return '', 200  # preflight
+
     data = request.get_json()
     nome = data.get('nome')
     senha = data.get('senha')
@@ -44,8 +49,11 @@ def insert_jogador():
 # =========================================
 # Atualizar pontos e quizzes respondidos
 # =========================================
-@app.route('/api/jogador/update', methods=['POST'])
+@app.route('/api/jogador/update', methods=['POST', 'OPTIONS'])
 def update_jogador():
+    if request.method == 'OPTIONS':
+        return '', 200  # preflight
+
     data = request.get_json()
     jogador_id = data.get('id')
     pontos = data.get('pontos')
@@ -69,8 +77,11 @@ def update_jogador():
 # =========================================
 # Buscar jogador pelo ID
 # =========================================
-@app.route('/api/jogador/get', methods=['POST'])
+@app.route('/api/jogador/get', methods=['POST', 'OPTIONS'])
 def get_jogador():
+    if request.method == 'OPTIONS':
+        return '', 200  # preflight
+
     data = request.get_json()
     jogador_id = data.get('id')
 
