@@ -97,6 +97,34 @@ def get_jogador():
 
     return jsonify(dict(jogador))
 
+
+# =========================================
+# Buscar carta aleatória por raridade
+# =========================================
+@app.route('/api/carta/random', methods=['POST', 'OPTIONS'])
+def get_carta_random():
+    if request.method == 'OPTIONS':
+        return '', 200  # preflight
+
+    data = request.get_json()
+    raridade = data.get('raridade')
+
+    if raridade is None:
+        return jsonify({"erro": "raridade é obrigatória"}), 400
+
+    conn = get_db_connection()
+    carta = conn.execute(
+        'SELECT * FROM cartas WHERE raridade = ? ORDER BY RANDOM() LIMIT 1;',
+        (raridade,)
+    ).fetchone()
+    conn.close()
+
+    if carta is None:
+        return jsonify({"erro": "Nenhuma carta encontrada para essa raridade"}), 404
+
+    return jsonify(dict(carta))
+
+
 # =========================================
 # Rodar o servidor
 # =========================================
