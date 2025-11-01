@@ -101,7 +101,7 @@ def get_jogador():
 # =========================================
 # Buscar carta aleatória por raridade
 # =========================================
-@app.route('/api/carta/random', methods=['POST', 'OPTIONS'])
+@app.route('/api/carta/get', methods=['POST', 'OPTIONS'])
 def get_carta_random():
     if request.method == 'OPTIONS':
         return '', 200  # preflight
