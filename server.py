@@ -216,7 +216,7 @@ def update_carta():
 
 
 # =========================================
-# Rodar o servidor pyanuwhere
+# Rodar o servidor pyanywhere
 # =========================================
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
