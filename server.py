@@ -126,6 +126,96 @@ def get_carta_random():
 
 
 # =========================================
+# Inserir nova carta no album do jogador
+# =========================================
+@app.route('/api/carta/insert', methods=['POST', 'OPTIONS'])
+def insert_carta():
+    if request.method == 'OPTIONS':
+        return '', 200  # preflight
+
+    data = request.get_json()
+    jogador_id = data.get('idJogador')
+    carta_id = data.get('idCarta')
+    quantidade = 1
+    
+    if jogador_id is None:
+        return jsonify({"erro": "idJogador é obrigatório"}), 400
+    if carta_id is None:
+        return jsonify({"erro": "idCarta é obrigatório"}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        'INSERT INTO album (idJogador, idCarta, quantidade) VALUES (?, ?, ?)',
+        (jogador_id, carta_id, quantidade)
+    )
+    conn.commit()
+    conn.close()
+
+    return jsonify({"status": "ok"})
+
+
+# =========================================
+# Selecionar carta no album do jogador
+# =========================================
+@app.route('/api/carta/select', methods=['POST', 'OPTIONS'])
+def select_carta():
+    if request.method == 'OPTIONS':
+        return '', 200  # preflight
+
+    data = request.get_json()
+    jogador_id = data.get('idJogador')
+    carta_id = data.get('idCarta')
+
+    if jogador_id is None:
+        return jsonify({"erro": "idJogador é obrigatório"}), 400
+    if carta_id is None:
+        return jsonify({"erro": "idCarta é obrigatório"}), 400
+
+    conn = get_db_connection()
+    carta = conn.execute(
+        'SELECT * FROM album WHERE idJogador = ? AND idCarta = ?',
+        (jogador_id, carta_id)
+    ).fetchone()
+    conn.close()
+
+    if carta is None:
+        return jsonify({"erro": "Carta não encontrada no album do jogador"}), 404
+
+    return jsonify(dict(carta))
+
+
+# =========================================
+# Atualizar carta no album do jogador
+# =========================================
+@app.route('/api/carta/update', methods=['POST', 'OPTIONS'])
+def update_carta():
+    if request.method == 'OPTIONS':
+        return '', 200  # preflight
+
+    data = request.get_json()
+    jogador_id = data.get('idJogador')
+    carta_id = data.get('idCarta')
+    quantidade = data.get('quantidade') + 1
+
+    if jogador_id is None:
+        return jsonify({"erro": "idJogador é obrigatório"}), 400
+    if carta_id is None:
+        return jsonify({"erro": "idCarta é obrigatório"}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        'UPDATE album SET quantidade=? WHERE idJogador=? AND idCarta=?',
+        (quantidade, jogador_id, carta_id)
+    )
+    conn.commit()
+    conn.close()
+
+    return jsonify({"status": "ok"})
+
+
+# =========================================
 # Rodar o servidor
 # =========================================
 if __name__ == '__main__':
