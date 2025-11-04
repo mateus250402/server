@@ -47,7 +47,7 @@ def insert_jogador():
     return jsonify({"status": "ok", "id": jogador_id})
 
 # =========================================
-# Atualizar pontos e quizzes respondidos
+# Atualizar jogador
 # =========================================
 @app.route('/api/jogador/update', methods=['POST', 'OPTIONS'])
 def update_jogador():
@@ -120,7 +120,7 @@ def get_carta_random():
 
     conn = get_db_connection()
     carta = conn.execute(
-        'SELECT * FROM cartas WHERE raridade = ? ORDER BY RANDOM() LIMIT 1;',
+        'SELECT * FROM carta WHERE raridade = ? ORDER BY RANDOM() LIMIT 1;',
         (raridade,)
     ).fetchone()
     conn.close()
