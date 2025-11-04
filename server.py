@@ -75,7 +75,7 @@ def update_jogador():
     return jsonify({"status": "ok"})
 
 # =========================================
-# Buscar jogador pelo ID
+# Buscar jogador pelo nome
 # =========================================
 @app.route('/api/jogador/get', methods=['POST', 'OPTIONS'])
 def get_jogador():
@@ -83,13 +83,19 @@ def get_jogador():
         return '', 200  # preflight
 
     data = request.get_json()
-    jogador_id = data.get('id')
-
-    if jogador_id is None:
-        return jsonify({"erro": "id é obrigatório"}), 400
-
+    jogadorNome = data.get('nome')
+    jogadorSenha = data.get('senha')
+    
+    if jogadorNome is None:
+        return jsonify({"erro": "nome é obrigatório"}), 400
+    if jogadorSenha is None:
+        return jsonify({"erro": "senha é obrigatória"}), 400
+    
     conn = get_db_connection()
-    jogador = conn.execute('SELECT * FROM jogador WHERE id=?', (jogador_id,)).fetchone()
+    jogador = conn.execute(
+        'SELECT * FROM jogador WHERE nome = ? AND senha = ?',
+        (jogadorNome, jogadorSenha)
+    ).fetchone()
     conn.close()
 
     if jogador is None:
