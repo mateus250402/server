@@ -197,51 +197,41 @@ def select_carta():
 @app.route('/api/carta/update', methods=['POST', 'OPTIONS'])
 def update_carta():
     if request.method == 'OPTIONS':
-        return '', 200  # Preflight para CORS
+        return '', 200
 
     data = request.get_json()
     jogador_id = data.get('idJogador')
     carta_id = data.get('idCarta')
 
-    if jogador_id is None:
-        return jsonify({"erro": "idJogador é obrigatório"}), 400
-    if carta_id is None:
-        return jsonify({"erro": "idCarta é obrigatório"}), 400
+    if jogador_id is None or carta_id is None:
+        return jsonify({"erro": "idJogador e idCarta são obrigatórios"}), 400
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Primeiro, buscar a quantidade atual
-    cursor.execute(
-        'SELECT quantidade FROM album WHERE idJogador = ? AND idCarta = ?',
+    # Verifica se já existe
+    row = cursor.execute(
+        'SELECT quantidade FROM album WHERE idJogador=? AND idCarta=?',
         (jogador_id, carta_id)
-    )
-    row = cursor.fetchone()
+    ).fetchone()
 
-    if row is None:
-        # Caso a carta ainda não exista no álbum do jogador
-        conn.close()
-        return jsonify({"erro": "Carta não encontrada no álbum do jogador"}), 404
-
-    quantidade_atual = row['quantidade'] if 'quantidade' in row.keys() else row[0]
-    nova_quantidade = quantidade_atual + 1
-
-    # Atualizar com a nova quantidade
-    cursor.execute(
-        'UPDATE album SET quantidade = ? WHERE idJogador = ? AND idCarta = ?',
-        (nova_quantidade, jogador_id, carta_id)
-    )
+    if row:
+        nova_quantidade = row['quantidade'] + 1
+        cursor.execute(
+            'UPDATE album SET quantidade=? WHERE idJogador=? AND idCarta=?',
+            (nova_quantidade, jogador_id, carta_id)
+        )
+    else:
+        cursor.execute(
+            'INSERT INTO album (idJogador, idCarta, quantidade) VALUES (?, ?, ?)',
+            (jogador_id, carta_id, 1)
+        )
 
     conn.commit()
     conn.close()
 
-    return jsonify({
-        "status": "ok",
-        "idJogador": jogador_id,
-        "idCarta": carta_id,
-        "quantidade_antiga": quantidade_atual,
-        "quantidade_nova": nova_quantidade
-    })
+    return jsonify({"status": "ok"})
+
 
 
 # =========================================
