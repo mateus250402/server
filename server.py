@@ -251,7 +251,7 @@ def get_todas_cartas():
 
 
 # =========================================
-# Buscar cartas do álbum de um jogador
+# Buscar cartas do álbum de um jogador 
 # =========================================
 @app.route('/api/album/jogador', methods=['POST', 'OPTIONS'])
 def get_album_jogador():
