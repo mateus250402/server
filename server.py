@@ -192,17 +192,16 @@ def select_carta():
 
 
 # =========================================
-# Atualizar carta no album do jogador
+# Atualizar carta no álbum do jogador
 # =========================================
 @app.route('/api/carta/update', methods=['POST', 'OPTIONS'])
 def update_carta():
     if request.method == 'OPTIONS':
-        return '', 200  # preflight
+        return '', 200  # Preflight para CORS
 
     data = request.get_json()
     jogador_id = data.get('idJogador')
     carta_id = data.get('idCarta')
-    quantidade = data.get('quantidade') + 1
 
     if jogador_id is None:
         return jsonify({"erro": "idJogador é obrigatório"}), 400
@@ -211,14 +210,38 @@ def update_carta():
 
     conn = get_db_connection()
     cursor = conn.cursor()
+
+    # Primeiro, buscar a quantidade atual
     cursor.execute(
-        'UPDATE album SET quantidade=? WHERE idJogador=? AND idCarta=?',
-        (quantidade, jogador_id, carta_id)
+        'SELECT quantidade FROM album WHERE idJogador = ? AND idCarta = ?',
+        (jogador_id, carta_id)
     )
+    row = cursor.fetchone()
+
+    if row is None:
+        # Caso a carta ainda não exista no álbum do jogador
+        conn.close()
+        return jsonify({"erro": "Carta não encontrada no álbum do jogador"}), 404
+
+    quantidade_atual = row['quantidade'] if 'quantidade' in row.keys() else row[0]
+    nova_quantidade = quantidade_atual + 1
+
+    # Atualizar com a nova quantidade
+    cursor.execute(
+        'UPDATE album SET quantidade = ? WHERE idJogador = ? AND idCarta = ?',
+        (nova_quantidade, jogador_id, carta_id)
+    )
+
     conn.commit()
     conn.close()
 
-    return jsonify({"status": "ok"})
+    return jsonify({
+        "status": "ok",
+        "idJogador": jogador_id,
+        "idCarta": carta_id,
+        "quantidade_antiga": quantidade_atual,
+        "quantidade_nova": nova_quantidade
+    })
 
 
 # =========================================
