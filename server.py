@@ -233,6 +233,98 @@ def update_carta():
     return jsonify({"status": "ok"})
 
 
+# Adicione estes endpoints no seu arquivo Flask
+
+# =========================================
+# Buscar TODAS as cartas do jogo
+# =========================================
+@app.route('/api/cartas/todas', methods=['GET', 'OPTIONS'])
+def get_todas_cartas():
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    conn = get_db_connection()
+    cartas = conn.execute('SELECT * FROM carta ORDER BY nome').fetchall()
+    conn.close()
+    
+    return jsonify([dict(carta) for carta in cartas])
+
+
+# =========================================
+# Buscar cartas do álbum de um jogador
+# =========================================
+@app.route('/api/album/jogador', methods=['POST', 'OPTIONS'])
+def get_album_jogador():
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    data = request.get_json()
+    jogador_id = data.get('idJogador')
+    
+    if jogador_id is None:
+        return jsonify({"erro": "idJogador é obrigatório"}), 400
+    
+    conn = get_db_connection()
+    
+    # Buscar todas as cartas do álbum do jogador
+    cartas_album = conn.execute(
+        '''SELECT a.idCarta, a.quantidade, c.nome, c.caminhoImagem, c.raridade, c.categoria
+           FROM album a
+           JOIN carta c ON a.idCarta = c.id
+           WHERE a.idJogador = ?
+           ORDER BY c.nome''',
+        (jogador_id,)
+    ).fetchall()
+    
+    conn.close()
+    
+    return jsonify([dict(carta) for carta in cartas_album])
+
+
+# =========================================
+# Buscar estatísticas do álbum
+# =========================================
+@app.route('/api/album/stats', methods=['POST', 'OPTIONS'])
+def get_album_stats():
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    data = request.get_json()
+    jogador_id = data.get('idJogador')
+    
+    if jogador_id is None:
+        return jsonify({"erro": "idJogador é obrigatório"}), 400
+    
+    conn = get_db_connection()
+    
+    # Total de cartas no jogo
+    total_cartas = conn.execute('SELECT COUNT(*) as total FROM carta').fetchone()['total']
+    
+    # Cartas únicas que o jogador possui
+    cartas_obtidas = conn.execute(
+        'SELECT COUNT(DISTINCT idCarta) as obtidas FROM album WHERE idJogador = ?',
+        (jogador_id,)
+    ).fetchone()['obtidas']
+    
+    # Cartas por raridade
+    stats_raridade = conn.execute(
+        '''SELECT c.raridade, COUNT(*) as quantidade
+           FROM album a
+           JOIN carta c ON a.idCarta = c.id
+           WHERE a.idJogador = ?
+           GROUP BY c.raridade''',
+        (jogador_id,)
+    ).fetchall()
+    
+    conn.close()
+    
+    return jsonify({
+        "total": total_cartas,
+        "obtidas": cartas_obtidas,
+        "porcentagem": round((cartas_obtidas / total_cartas * 100), 2) if total_cartas > 0 else 0,
+        "por_raridade": [dict(stat) for stat in stats_raridade]
+    })
+
 # =========================================
 # Rodar o servidor pyanywhere
 # =========================================
