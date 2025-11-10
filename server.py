@@ -272,7 +272,7 @@ def get_album_jogador():
            FROM album a
            JOIN carta c ON a.idCarta = c.id
            WHERE a.idJogador = ?
-           ORDER BY c.nome''',
+           ORDER BY c.raridade''',
         (jogador_id,)
     ).fetchall()
     
