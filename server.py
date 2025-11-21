@@ -326,6 +326,63 @@ def get_album_stats():
     })
 
 # =========================================
+# Buscar pontos do jogador
+# =========================================
+@app.route('/api/jogador/pontos/get', methods=['POST', 'OPTIONS'])
+def get_pontos_jogador():
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    data = request.get_json()
+    jogador_id = data.get('idJogador')
+    
+    if jogador_id is None:
+        return jsonify({"erro": "idJogador é obrigatório"}), 400
+    
+    conn = get_db_connection()
+    jogador = conn.execute(
+        'SELECT pontos FROM jogador WHERE id = ?',
+        (jogador_id,)
+    ).fetchone()
+    conn.close()
+    
+    if jogador is None:
+        return jsonify({"erro": "Jogador não encontrado"}), 404
+    
+    return jsonify({"pontos": jogador['pontos']})
+
+
+# =========================================
+# Atualizar pontos do jogador
+# =========================================
+@app.route('/api/jogador/pontos/update', methods=['POST', 'OPTIONS'])
+def update_pontos_jogador():
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    data = request.get_json()
+    jogador_id = data.get('idJogador')
+    pontos = data.get('pontos')
+    
+    if jogador_id is None:
+        return jsonify({"erro": "idJogador é obrigatório"}), 400
+    if pontos is None:
+        return jsonify({"erro": "pontos é obrigatório"}), 400
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        'UPDATE jogador SET pontos = ? WHERE id = ?',
+        (pontos, jogador_id)
+    )
+    conn.commit()
+    conn.close()
+    
+    return jsonify({"status": "ok", "pontos": pontos})
+
+
+
+# =========================================
 # Rodar o servidor pyanywhere
 # =========================================
 if __name__ == '__main__':
