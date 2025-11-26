@@ -25,7 +25,7 @@ def index():
 @app.route('/api/jogador/insert', methods=['POST', 'OPTIONS'])
 def insert_jogador():
     if request.method == 'OPTIONS':
-        return '', 200  # preflight
+        return '', 200  
 
     data = request.get_json()
     nome = data.get('nome')
@@ -52,7 +52,7 @@ def insert_jogador():
 @app.route('/api/jogador/update', methods=['POST', 'OPTIONS'])
 def update_jogador():
     if request.method == 'OPTIONS':
-        return '', 200  # preflight
+        return '', 200  
 
     data = request.get_json()
     jogador_id = data.get('id')
@@ -80,7 +80,7 @@ def update_jogador():
 @app.route('/api/jogador/get', methods=['POST', 'OPTIONS'])
 def get_jogador():
     if request.method == 'OPTIONS':
-        return '', 200  # preflight
+        return '', 200  
 
     data = request.get_json()
     jogadorNome = data.get('nome')
@@ -110,7 +110,7 @@ def get_jogador():
 @app.route('/api/carta/get', methods=['POST', 'OPTIONS'])
 def get_carta_random():
     if request.method == 'OPTIONS':
-        return '', 200  # preflight
+        return '', 200  
 
     data = request.get_json()
     raridade = data.get('raridade')
@@ -137,7 +137,7 @@ def get_carta_random():
 @app.route('/api/carta/insert', methods=['POST', 'OPTIONS'])
 def insert_carta():
     if request.method == 'OPTIONS':
-        return '', 200  # preflight
+        return '', 200  
 
     data = request.get_json()
     jogador_id = data.get('idJogador')
@@ -167,7 +167,7 @@ def insert_carta():
 @app.route('/api/carta/select', methods=['POST', 'OPTIONS'])
 def select_carta():
     if request.method == 'OPTIONS':
-        return '', 200  # preflight
+        return '', 200  
 
     data = request.get_json()
     jogador_id = data.get('idJogador')
